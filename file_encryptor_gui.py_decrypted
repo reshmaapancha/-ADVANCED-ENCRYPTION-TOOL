@@ -2,8 +2,9 @@ import os
 from cryptography.fernet import Fernet
 from tkinter import Tk, Label, Button, filedialog, messagebox, Entry
 
-#Key Generation and Handling
-
+# -----------------------------
+# Key Generation and Handling
+# -----------------------------
 def generate_key(password: str) -> bytes:
     from hashlib import sha256
     return sha256(password.encode()).digest()
@@ -13,7 +14,9 @@ def get_fernet_key(password: str) -> Fernet:
     key = generate_key(password)
     return Fernet(base64.urlsafe_b64encode(key))
 
+# -----------------------------
 # File Encryption
+# -----------------------------
 def encrypt_file(filepath, password):
     try:
         fernet = get_fernet_key(password)
@@ -29,8 +32,9 @@ def encrypt_file(filepath, password):
     except Exception as e:
         messagebox.showerror("Error", str(e))
 
+# -----------------------------
 # File Decryption
-
+# -----------------------------
 def decrypt_file(filepath, password):
     try:
         fernet = get_fernet_key(password)
