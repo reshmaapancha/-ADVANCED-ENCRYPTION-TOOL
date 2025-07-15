@@ -1,0 +1,97 @@
+import os
+from cryptography.fernet import Fernet
+from tkinter import Tk, Label, Button, filedialog, messagebox, Entry
+
+#Key Generation and Handling
+
+def generate_key(password: str) -> bytes:
+    from hashlib import sha256
+    return sha256(password.encode()).digest()
+
+def get_fernet_key(password: str) -> Fernet:
+    import base64
+    key = generate_key(password)
+    return Fernet(base64.urlsafe_b64encode(key))
+
+# File Encryption
+def encrypt_file(filepath, password):
+    try:
+        fernet = get_fernet_key(password)
+        with open(filepath, 'rb') as f:
+            data = f.read()
+
+        encrypted = fernet.encrypt(data)
+
+        with open(filepath + ".encrypted", 'wb') as f:
+            f.write(encrypted)
+
+        messagebox.showinfo("Success", f"File encrypted: {filepath}.encrypted")
+    except Exception as e:
+        messagebox.showerror("Error", str(e))
+
+# File Decryption
+
+def decrypt_file(filepath, password):
+    try:
+        fernet = get_fernet_key(password)
+        with open(filepath, 'rb') as f:
+            data = f.read()
+
+        decrypted = fernet.decrypt(data)
+
+        original_name = filepath.replace(".encrypted", "_decrypted")
+
+        with open(original_name, 'wb') as f:
+            f.write(decrypted)
+
+        messagebox.showinfo("Success", f"File decrypted: {original_name}")
+    except Exception as e:
+        messagebox.showerror("Error", str(e))
+
+# -----------------------------
+# GUI Setup
+# -----------------------------
+class FileEncryptorGUI:
+    def __init__(self, master):
+        self.master = master
+        master.title("SecureFileCrypt")
+
+        self.label = Label(master, text="AES-256 File Encryptor & Decryptor")
+        self.label.pack(pady=10)
+
+        self.password_label = Label(master, text="Enter Password:")
+        self.password_label.pack()
+
+        self.password_entry = Entry(master, show="*", width=40)
+        self.password_entry.pack(pady=5)
+
+        self.encrypt_button = Button(master, text="Encrypt File", command=self.encrypt_file)
+        self.encrypt_button.pack(pady=5)
+
+        self.decrypt_button = Button(master, text="Decrypt File", command=self.decrypt_file)
+        self.decrypt_button.pack(pady=5)
+
+    def encrypt_file(self):
+        filepath = filedialog.askopenfilename()
+        password = self.password_entry.get()
+        if filepath and password:
+            encrypt_file(filepath, password)
+        else:
+            messagebox.showwarning("Input Required", "Please select a file and enter password.")
+
+    def decrypt_file(self):
+        filepath = filedialog.askopenfilename()
+        password = self.password_entry.get()
+        if filepath and password:
+            decrypt_file(filepath, password)
+        else:
+            messagebox.showwarning("Input Required", "Please select a file and enter password.")
+
+# -----------------------------
+# Run Application
+# -----------------------------
+if __name__ == "__main__":
+    root = Tk()
+    root.geometry("400x250")
+    app = FileEncryptorGUI(root)
+    root.mainloop()
